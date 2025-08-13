@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PitchTracer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>PitchTracer</h1>
+        <div class="controls">
+            <button id="startButton">開始</button>
+            <button id="stopButton" disabled>停止</button>
+            <div class="control-group">
+                <label for="ref-pitch">基準ピッチ (A4):</label>
+                <input type="number" id="ref-pitch" value="442" step="1"> Hz
+            </div>
+            <div class="control-group">
+                <label for="key-select">キー:</label>
+                <select id="key-select">
+                    <option value="C">C</option>
+                    <option value="C#">C#</option>
+                    <option value="D">D</option>
+                    <option value="D#">D#</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                    <option value="F#">F#</option>
+                    <option value="G">G</option>
+                    <option value="G#">G#</option>
+                    <option value="A">A</option>
+                    <option value="A#">A#</option>
+                    <option value="B">B</option>
+                </select>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="chart-container">
+            <canvas id="pitchChart"></canvas>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://unpkg.com/pitchfinder@2.1.3/lib/pitchfinder.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
