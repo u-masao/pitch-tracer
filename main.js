@@ -1,3 +1,5 @@
+import * as Pitchfinder from 'https://esm.sh/pitchfinder@2.3.2';
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM要素 ---
     const startButton = document.getElementById('startButton');
