@@ -22,7 +22,6 @@
             border: 1px dashed rgba(107, 114, 128, 0.5);
             background-color: rgba(107, 114, 128, 0.2);
         }
-        /* Simple transition for modal */
         #settingsModal.hidden {
             display: none;
         }
@@ -38,28 +37,25 @@
         <header class="bg-gray-800 p-3 shadow-lg z-20 border-b border-gray-700">
             <div class="container mx-auto flex flex-wrap items-center justify-center gap-y-3 gap-x-4">
                 <!-- Start/Stop Controls -->
-                <button id="startButton" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
-                    開始
+                <button id="startButton" title="開始" class="bg-green-600 hover:bg-green-500 text-white font-bold p-2 rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
                 </button>
-                <button id="stopButton" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" /></svg>
-                    停止
+                <button id="stopButton" title="停止" class="bg-red-600 hover:bg-red-500 text-white font-bold p-2 rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" /></svg>
                 </button>
                  <!-- Reset View -->
-                 <button id="resetButton" title="Reset view and clear data" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
-                    リセット
+                 <button id="resetButton" title="リセット" class="bg-blue-600 hover:bg-blue-500 text-white font-bold p-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
                 </button>
                 <!-- Auto Scroll Toggle -->
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="autoScroll" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-cyan-500 focus:ring-cyan-600" checked>
-                    <label for="autoScroll" class="font-semibold text-sm">自動スクロール</label>
-                </div>
+                <button id="autoScrollButton" title="自動スクロール" class="bg-cyan-600 text-white font-bold p-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
+                    </svg>
+                </button>
                 <!-- Settings Button -->
-                <button id="settingsButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
-                    設定
+                <button id="settingsButton" title="設定" class="bg-gray-600 hover:bg-gray-500 text-white font-bold p-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01-.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
                 </button>
             </div>
         </header>
@@ -134,7 +130,7 @@
             const startButton = document.getElementById('startButton');
             const stopButton = document.getElementById('stopButton');
             const resetButton = document.getElementById('resetButton');
-            const autoScrollCheckbox = document.getElementById('autoScroll');
+            const autoScrollButton = document.getElementById('autoScrollButton');
             const pitchChartCanvas = document.getElementById('pitchChart');
             const messageOverlay = document.getElementById('messageOverlay');
             
@@ -162,6 +158,7 @@
             let audioContext, analyser, mediaStream, chart;
             let animationFrameId;
             let isRecording = false;
+            let isAutoScroll = true;
             let startTime = 0;
             let audioBuffer;
             let latestPitch = { frequency: 0, midi: null };
@@ -196,6 +193,16 @@
                 showFrequencyCheckbox.disabled = disabled;
             };
 
+            const updateAutoScrollButton = () => {
+                if (isAutoScroll) {
+                    autoScrollButton.classList.remove('bg-gray-600', 'opacity-50');
+                    autoScrollButton.classList.add('bg-cyan-600');
+                } else {
+                    autoScrollButton.classList.remove('bg-cyan-600');
+                    autoScrollButton.classList.add('bg-gray-600', 'opacity-50');
+                }
+            };
+
             // --- Custom Chart.js Plugin for Live Display ---
             const currentPitchDisplay = {
                 id: 'currentPitchDisplay',
@@ -227,21 +234,17 @@
                         ctx.lineWidth = 1;
                         ctx.strokeRect(boxX, 5, boxWidth, boxHeight);
 
-                        // Set alignment to right for primary text
                         ctx.textAlign = 'right';
                         ctx.textBaseline = 'top';
 
-                        // Note Name Text
                         ctx.font = 'bold 2.5rem Inter';
                         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                         ctx.fillText(noteName, textRightEdge, 10);
 
-                        // Cent Text
                         ctx.font = 'bold 1.5rem Inter';
                         ctx.fillStyle = centColor;
                         ctx.fillText(centText, textRightEdge, 50);
                         
-                        // Frequency Text (optional, aligned left)
                         if (shouldShowFrequency) {
                             const freqText = `${latestPitch.frequency.toFixed(2)} Hz`;
                             ctx.textAlign = 'left';
@@ -318,8 +321,8 @@
                                 }
                             },
                             zoom: {
-                                pan: { enabled: true, mode: 'xy', onPanStart: () => { autoScrollCheckbox.checked = false; return true; } },
-                                zoom: { drag: { enabled: true, modifierKey: 'shift' }, wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy', onZoomStart: () => { autoScrollCheckbox.checked = false; } }
+                                pan: { enabled: true, mode: 'xy', onPanStart: () => { isAutoScroll = false; updateAutoScrollButton(); return true; } },
+                                zoom: { drag: { enabled: true, modifierKey: 'shift' }, wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy', onZoomStart: () => { isAutoScroll = false; updateAutoScrollButton(); } }
                             },
                             annotation: { annotations: {} }
                         }
@@ -415,7 +418,7 @@
                 const dataPoint = { x: currentTime, y: averagedMidi };
                 const data = chart.data.datasets[0].data;
                 data.push(dataPoint);
-                if (autoScrollCheckbox.checked) {
+                if (isAutoScroll) {
                     while (data.length > MAX_DATA_POINTS) data.shift();
                     const newMax = currentTime, newMin = newMax - TIME_WINDOW;
                     chart.options.scales.x.min = newMin;
@@ -468,6 +471,8 @@
                 if (chart) {
                     chart.data.datasets[0].data = [];
                     chart.resetZoom();
+                    isAutoScroll = true;
+                    updateAutoScrollButton();
                     chart.update();
                 }
                 pitchHistory = [];
@@ -478,6 +483,10 @@
             startButton.addEventListener('click', startAudio);
             stopButton.addEventListener('click', stopAudio);
             resetButton.addEventListener('click', resetView);
+            autoScrollButton.addEventListener('click', () => {
+                isAutoScroll = !isAutoScroll;
+                updateAutoScrollButton();
+            });
             refA4Input.addEventListener('change', updateAnnotations);
             keySelector.addEventListener('change', updateAnnotations);
             
@@ -490,6 +499,7 @@
             populateKeySelector();
             initializeChart();
             updateAnnotations();
+            updateAutoScrollButton();
         };
     </script>
 </body>
