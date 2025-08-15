@@ -4,47 +4,485 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PitchTracer</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <header>
-        <h1>PitchTracer</h1>
-        <div class="controls">
-            <button id="startButton">開始</button>
-            <button id="stopButton" disabled>停止</button>
-            <div class="control-group">
-                <label for="ref-pitch">基準ピッチ (A4):</label>
-                <input type="number" id="ref-pitch" value="442" step="1"> Hz
-            </div>
-            <div class="control-group">
-                <label for="key-select">キー:</label>
-                <select id="key-select">
-                    <option value="C">C</option>
-                    <option value="C#">C#</option>
-                    <option value="D">D</option>
-                    <option value="D#">D#</option>
-                    <option value="E">E</option>
-                    <option value="F">F</option>
-                    <option value="F#">F#</option>
-                    <option value="G">G</option>
-                    <option value="G#">G#</option>
-                    <option value="A">A</option>
-                    <option value="A#">A#</option>
-                    <option value="B">B</option>
-                </select>
-            </div>
-        </div>
-    </header>
-    <main>
-        <div class="chart-container">
-            <canvas id="pitchChart"></canvas>
-        </div>
-    </main>
-
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for graphing -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    
+    <!-- Chart.js plugins for zoom/pan and annotations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
-    <script type="module" src="main.js"></script>
+
+    <style>
+        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+        .chartjs-zoom-plugin-drag-box {
+            border: 1px dashed rgba(107, 114, 128, 0.5);
+            background-color: rgba(107, 114, 128, 0.2);
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans antialiased">
+
+    <div id="app" class="flex flex-col h-screen">
+        <!-- Header with controls -->
+        <header class="bg-gray-800 p-3 shadow-lg z-20 border-b border-gray-700">
+            <div class="container mx-auto flex flex-wrap items-center justify-between gap-y-3 gap-x-4">
+                <h1 class="text-2xl font-bold text-cyan-400">PitchTracer</h1>
+                
+                <div class="flex flex-wrap items-center gap-y-3 gap-x-4">
+                    <!-- Start/Stop Controls -->
+                    <button id="startButton" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
+                        開始
+                    </button>
+                    <button id="stopButton" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" /></svg>
+                        停止
+                    </button>
+                    
+                    <!-- Settings -->
+                    <div class="flex items-center gap-2">
+                        <label for="refA4" class="font-semibold text-sm">A4:</label>
+                        <input type="number" id="refA4" value="442" class="bg-gray-700 text-white w-20 rounded-md p-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <span class="text-gray-400">Hz</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <label for="keySelector" class="font-semibold text-sm">Key:</label>
+                        <select id="keySelector" class="bg-gray-700 text-white rounded-md p-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500"></select>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label for="bufferSize" class="font-semibold text-sm">分析ウィンドウ:</label>
+                        <select id="bufferSize" class="bg-gray-700 text-white rounded-md p-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option value="256">256 (最高分解能)</option>
+                            <option value="512" selected>512 (高分解能)</option>
+                            <option value="1024">1024 (標準)</option>
+                            <option value="2048">2048 (低音域重視)</option>
+                        </select>
+                    </div>
+
+                    <!-- Moving Average -->
+                    <div class="flex items-center gap-2">
+                        <label for="movingAverage" class="font-semibold text-sm">移動平均:</label>
+                        <input type="number" id="movingAverage" value="3" min="1" max="20" class="bg-gray-700 text-white w-20 rounded-md p-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </div>
+
+                    <!-- Auto Scroll Toggle -->
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="autoScroll" class="h-4 w-4 rounded border-gray-500 bg-gray-700 text-cyan-500 focus:ring-cyan-600" checked>
+                        <label for="autoScroll" class="font-semibold text-sm">自動スクロール</label>
+                    </div>
+
+                    <!-- Reset View -->
+                     <button id="resetButton" title="Reset view and clear data" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
+                        リセット
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content with chart -->
+        <main class="flex-grow p-4 relative bg-gray-900">
+            <div id="chart-container" class="w-full h-full">
+                <canvas id="pitchChart"></canvas>
+            </div>
+            <!-- Message overlay -->
+            <div id="messageOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center text-center p-4 z-10">
+                <div class="max-w-md">
+                    <h2 class="text-2xl font-bold text-cyan-400 mb-4">PitchTracerへようこそ</h2>
+                    <p class="text-gray-300 mb-6">「開始」ボタンを押してマイクへのアクセスを許可し、楽器のピッチ分析を始めてください。</p>
+                    <p class="text-sm text-gray-500">注意：音声データはあなたのブラウザ内でのみ処理され、サーバーには一切送信されません。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.onload = () => {
+            // --- DOM Element References ---
+            const startButton = document.getElementById('startButton');
+            const stopButton = document.getElementById('stopButton');
+            const resetButton = document.getElementById('resetButton');
+            const refA4Input = document.getElementById('refA4');
+            const keySelector = document.getElementById('keySelector');
+            const pitchChartCanvas = document.getElementById('pitchChart');
+            const messageOverlay = document.getElementById('messageOverlay');
+            const autoScrollCheckbox = document.getElementById('autoScroll');
+            const bufferSizeSelect = document.getElementById('bufferSize');
+            const movingAverageInput = document.getElementById('movingAverage');
+
+            // --- Constants ---
+            const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+            const MAX_DATA_POINTS = 1000;
+            const YIN_THRESHOLD = 0.15; // Default sensitivity
+            const TIME_WINDOW = 8000; // 8 seconds visible on chart
+            const MIN_FREQ = 110.00; // A2 frequency
+
+            // --- State Variables ---
+            let audioContext, analyser, mediaStream, chart;
+            let animationFrameId;
+            let isRecording = false;
+            let startTime = 0;
+            let audioBuffer;
+            let latestPitch = { frequency: 0, midi: null };
+            let pitchHistory = []; // For moving average
+
+            // --- Helper Functions ---
+            const freqToMidi = (frequency, refA4) => 69 + 12 * Math.log2(frequency / refA4);
+            
+            const midiToNoteName = (midi) => {
+                if (midi === null || !isFinite(midi)) return "";
+                const roundedMidi = Math.round(midi);
+                const noteIndex = roundedMidi % 12;
+                const octave = Math.floor(roundedMidi / 12) - 1;
+                return NOTE_NAMES[noteIndex] + octave;
+            };
+
+            const populateKeySelector = () => {
+                NOTE_NAMES.forEach((note, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = note;
+                    keySelector.appendChild(option);
+                });
+                keySelector.value = 0; // Default to C
+            };
+
+            // --- Custom Chart.js Plugin for Live Display ---
+            const currentPitchDisplay = {
+                id: 'currentPitchDisplay',
+                afterDraw: (chart) => {
+                    if (isRecording && latestPitch.midi !== null) {
+                        const ctx = chart.ctx;
+                        const noteName = midiToNoteName(latestPitch.midi);
+                        const freqText = `${latestPitch.frequency.toFixed(2)} Hz`;
+                        
+                        // Calculate cent deviation
+                        const nearestMidi = Math.round(latestPitch.midi);
+                        const cents = Math.round((latestPitch.midi - nearestMidi) * 100);
+                        const centText = `${cents >= 0 ? '+' : ''}${cents} cents`;
+                        const centColor = Math.abs(cents) <= 10 ? 'rgba(34, 211, 238, 0.9)' : // cyan-400 for in-tune
+                                          Math.abs(cents) <= 25 ? 'rgba(251, 191, 36, 0.9)' : // amber-400 for slightly off
+                                          'rgba(239, 68, 68, 0.9)'; // red-500 for very off
+
+                        ctx.save();
+                        
+                        // Background - increased height to fit cent display
+                        ctx.fillStyle = 'rgba(17, 24, 39, 0.7)'; // bg-gray-900 with opacity
+                        ctx.fillRect(5, 5, 220, 95);
+                        ctx.strokeStyle = 'rgba(55, 65, 81, 0.8)'; // bg-gray-700
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(5, 5, 220, 95);
+
+                        // Note Name Text
+                        ctx.font = 'bold 2.5rem Inter';
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'top';
+                        const noteNameMetrics = ctx.measureText(noteName);
+                        ctx.fillText(noteName, 15, 10);
+
+                        // Frequency Text
+                        ctx.font = '1.25rem "Noto Sans JP"';
+                        ctx.fillStyle = 'rgba(209, 213, 219, 0.9)'; // gray-300
+                        ctx.fillText(freqText, 25 + noteNameMetrics.width, 22);
+                        
+                        // Cent Text
+                        ctx.font = 'bold 1.5rem Inter';
+                        ctx.fillStyle = centColor; // Use dynamic color
+                        ctx.fillText(centText, 15, 55); // Positioned below
+                        
+                        ctx.restore();
+                    }
+                }
+            };
+
+
+            // --- Charting Functions ---
+            const initializeChart = () => {
+                const ctx = pitchChartCanvas.getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: 'Detected Pitch',
+                            data: [],
+                            borderColor: 'rgb(34, 211, 238)',
+                            backgroundColor: 'rgba(34, 211, 238, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0, // No smoothing
+                            spanGaps: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                title: { display: true, text: 'Time (s)', color: '#d1d5db' },
+                                ticks: { color: '#9ca3af', callback: (value) => (value / 1000).toFixed(1) },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Pitch (Note)', color: '#d1d5db' },
+                                ticks: { color: '#9ca3af', stepSize: 1, callback: (value) => Number.isInteger(value) ? midiToNoteName(value) : '' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: true, mode: 'index', intersect: false,
+                                callbacks: {
+                                    title: (items) => `Time: ${(items[0].parsed.x / 1000).toFixed(2)}s`,
+                                    label: (ctx) => {
+                                        const midi = ctx.parsed.y;
+                                        if (midi === null) return 'No pitch';
+                                        const refA4 = parseFloat(refA4Input.value);
+                                        const freq = refA4 * Math.pow(2, (midi - 69) / 12);
+                                        const nearestMidi = Math.round(midi);
+                                        const cents = Math.round((midi - nearestMidi) * 100);
+                                        return `${midiToNoteName(midi)} (${freq.toFixed(2)} Hz, ${cents >= 0 ? '+' : ''}${cents} cents)`;
+                                    }
+                                }
+                            },
+                            zoom: {
+                                pan: {
+                                    enabled: true,
+                                    mode: 'xy',
+                                    onPanStart: ({chart, event}) => {
+                                        if (event && event.native && event.native.shiftKey) {
+                                            return false;
+                                        }
+                                        autoScrollCheckbox.checked = false;
+                                        return true;
+                                    },
+                                },
+                                zoom: {
+                                    drag: {
+                                        enabled: true,
+                                        modifierKey: 'shift', 
+                                    },
+                                    wheel: { 
+                                        enabled: true,
+                                    },
+                                    pinch: { 
+                                        enabled: true 
+                                    },
+                                    mode: 'xy',
+                                    onZoomStart: () => {
+                                        autoScrollCheckbox.checked = false;
+                                    },
+                                }
+                            },
+                            annotation: { annotations: {} }
+                        }
+                    },
+                    plugins: [currentPitchDisplay] // Register the custom plugin
+                });
+            };
+            const updateAnnotations = () => {
+                if (!chart) return;
+                const keyIndex = parseInt(keySelector.value, 10);
+                const notesInKey = [0, 2, 4, 5, 7, 9, 11].map(i => (keyIndex + i) % 12);
+                const newAnnotations = {};
+                for (let midi = 21; midi <= 108; midi++) {
+                    const noteIndex = midi % 12;
+                    if (notesInKey.includes(noteIndex)) {
+                        const isRoot = noteIndex === keyIndex;
+                        newAnnotations[`note_${midi}`] = {
+                            type: 'line', yMin: midi, yMax: midi,
+                            borderColor: isRoot ? 'rgba(251, 191, 36, 0.4)' : 'rgba(255, 255, 255, 0.15)',
+                            borderWidth: isRoot ? 2 : 1, borderDash: isRoot ? [] : [5, 5],
+                            label: {
+                                content: midiToNoteName(midi), display: true, position: 'start',
+                                backgroundColor: 'rgba(17, 24, 39, 0.6)',
+                                color: isRoot ? 'rgba(251, 191, 36, 1)' : 'rgba(156, 163, 175, 1)',
+                                font: { size: 10, weight: isRoot ? 'bold' : 'normal' },
+                                xAdjust: 10,
+                            }
+                        };
+                    }
+                }
+                chart.options.plugins.annotation.annotations = newAnnotations;
+                chart.update();
+            };
+
+            // --- YIN Algorithm (without Parabolic Interpolation) ---
+            function yin(buffer, sampleRate, threshold) {
+                const yinBuffer = new Float32Array(buffer.length / 2);
+                let tau, pitchInHertz = 0, probability = 0;
+
+                // 1. Difference function
+                for (tau = 0; tau < yinBuffer.length; tau++) yinBuffer[tau] = 0;
+                for (tau = 1; tau < yinBuffer.length; tau++) {
+                    for (let i = 0; i < yinBuffer.length; i++) {
+                        const delta = buffer[i] - buffer[i + tau];
+                        yinBuffer[tau] += delta * delta;
+                    }
+                }
+
+                // 2. Cumulative mean normalized difference function
+                let runningSum = 0;
+                yinBuffer[0] = 1;
+                runningSum += yinBuffer[1];
+                yinBuffer[1] = yinBuffer[1] * 1 / runningSum;
+                for (tau = 2; tau < yinBuffer.length; tau++) {
+                    runningSum += yinBuffer[tau];
+                    yinBuffer[tau] = (runningSum === 0) ? 1 : yinBuffer[tau] * tau / runningSum;
+                }
+
+                // 3. Absolute thresholding to find the first dip
+                tau = 2;
+                while (tau < yinBuffer.length && yinBuffer[tau] > threshold) tau++;
+                
+                // 4. Find the lowest point in the dip
+                while (tau + 1 < yinBuffer.length && yinBuffer[tau + 1] < yinBuffer[tau]) tau++;
+
+                if (tau === yinBuffer.length || yinBuffer[tau] >= threshold) {
+                    return { frequency: 0, confidence: 0 };
+                }
+                
+                probability = 1 - yinBuffer[tau];
+                
+                // 5. Estimate frequency from the integer tau
+                if (tau > 0) {
+                    pitchInHertz = sampleRate / tau;
+                }
+
+                return { frequency: pitchInHertz, confidence: probability };
+            }
+
+            // --- Audio Processing Loop ---
+            const processAudioLoop = () => {
+                if (!isRecording) return;
+                
+                analyser.getFloatTimeDomainData(audioBuffer);
+                const pitch = yin(audioBuffer, audioContext.sampleRate, YIN_THRESHOLD);
+                
+                const currentTime = performance.now() - startTime;
+                const refA4 = parseFloat(refA4Input.value);
+                const rawMidi = pitch.frequency > MIN_FREQ ? freqToMidi(pitch.frequency, refA4) : null;
+
+                // --- Moving Average Logic ---
+                if (rawMidi === null) {
+                    pitchHistory = []; // Reset history on silence
+                } else {
+                    pitchHistory.push(rawMidi);
+                }
+                
+                const windowSize = parseInt(movingAverageInput.value, 10);
+                while (pitchHistory.length > windowSize) {
+                    pitchHistory.shift();
+                }
+
+                let averagedMidi = null;
+                if (pitchHistory.length > 0) {
+                    const sum = pitchHistory.reduce((a, b) => a + b, 0);
+                    averagedMidi = sum / pitchHistory.length;
+                }
+                
+                const averagedFreq = averagedMidi !== null ? refA4 * Math.pow(2, (averagedMidi - 69) / 12) : 0;
+                
+                latestPitch = { frequency: averagedFreq, midi: averagedMidi };
+                const dataPoint = { x: currentTime, y: averagedMidi };
+                
+                chart.data.datasets[0].data.push(dataPoint);
+                while (chart.data.datasets[0].data.length > MAX_DATA_POINTS) {
+                    chart.data.datasets[0].data.shift();
+                }
+
+                if (autoScrollCheckbox.checked) {
+                    const newMax = currentTime;
+                    const newMin = newMax - TIME_WINDOW;
+                    chart.options.scales.x.min = newMin;
+                    chart.options.scales.x.max = newMax;
+                }
+
+                chart.update('none');
+                
+                animationFrameId = requestAnimationFrame(processAudioLoop);
+            };
+
+            const startAudio = async () => {
+                if (isRecording) return;
+                try {
+                    const bufferSize = parseInt(bufferSizeSelect.value, 10);
+                    audioBuffer = new Float32Array(bufferSize);
+
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') await audioContext.resume();
+
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = bufferSize;
+                    
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const sourceNode = audioContext.createMediaStreamSource(mediaStream);
+                    sourceNode.connect(analyser);
+                    
+                    isRecording = true;
+                    startButton.disabled = true;
+                    stopButton.disabled = false;
+                    bufferSizeSelect.disabled = true;
+                    messageOverlay.style.display = 'none';
+                    startTime = performance.now();
+                    
+                    processAudioLoop();
+
+                } catch (err) {
+                    console.error('Error starting audio:', err);
+                    alert('マイクへのアクセスに失敗しました。ブラウザの設定を確認してください。');
+                }
+            };
+
+            const stopAudio = () => {
+                if (!isRecording) return;
+                isRecording = false;
+                cancelAnimationFrame(animationFrameId);
+                pitchHistory = []; // Reset history
+                latestPitch = { frequency: 0, midi: null };
+                chart.update(); // Redraw to clear the display
+                
+                if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+                if (audioContext) audioContext.close();
+                
+                startButton.disabled = false;
+                stopButton.disabled = true;
+                bufferSizeSelect.disabled = false;
+            };
+
+            const resetView = () => {
+                if (chart) {
+                    chart.data.datasets[0].data = [];
+                    chart.resetZoom();
+                    chart.update();
+                }
+                pitchHistory = []; // Reset history
+                if (isRecording) startTime = performance.now();
+            };
+
+            // --- Event Listeners & Initialization ---
+            startButton.addEventListener('click', startAudio);
+            stopButton.addEventListener('click', stopAudio);
+            resetButton.addEventListener('click', resetView);
+            refA4Input.addEventListener('change', updateAnnotations);
+            keySelector.addEventListener('change', updateAnnotations);
+
+            populateKeySelector();
+            initializeChart();
+            updateAnnotations();
+        };
+    </script>
 </body>
 </html>
