@@ -216,29 +216,38 @@
 
                         ctx.save();
                         
+                        const boxWidth = 220;
+                        const boxX = 5;
+                        const textRightEdge = boxX + boxWidth - 10; // Right edge with padding
+
                         const boxHeight = shouldShowFrequency ? 95 : 75;
                         ctx.fillStyle = 'rgba(17, 24, 39, 0.7)';
-                        ctx.fillRect(5, 5, 220, boxHeight);
+                        ctx.fillRect(boxX, 5, boxWidth, boxHeight);
                         ctx.strokeStyle = 'rgba(55, 65, 81, 0.8)';
                         ctx.lineWidth = 1;
-                        ctx.strokeRect(5, 5, 220, boxHeight);
+                        ctx.strokeRect(boxX, 5, boxWidth, boxHeight);
 
+                        // Set alignment to right for primary text
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'top';
+
+                        // Note Name Text
                         ctx.font = 'bold 2.5rem Inter';
                         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                        ctx.textAlign = 'left';
-                        ctx.textBaseline = 'top';
-                        const noteNameMetrics = ctx.measureText(noteName);
-                        ctx.fillText(noteName, 15, 10);
+                        ctx.fillText(noteName, textRightEdge, 10);
 
+                        // Cent Text
                         ctx.font = 'bold 1.5rem Inter';
                         ctx.fillStyle = centColor;
-                        ctx.fillText(centText, 15, 50);
+                        ctx.fillText(centText, textRightEdge, 50);
                         
+                        // Frequency Text (optional, aligned left)
                         if (shouldShowFrequency) {
                             const freqText = `${latestPitch.frequency.toFixed(2)} Hz`;
+                            ctx.textAlign = 'left';
                             ctx.font = '1.25rem "Noto Sans JP"';
                             ctx.fillStyle = 'rgba(209, 213, 219, 0.9)';
-                            ctx.fillText(freqText, 25 + noteNameMetrics.width, 22);
+                            ctx.fillText(freqText, boxX + 15, 22);
                         }
                         
                         ctx.restore();
