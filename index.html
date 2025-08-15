@@ -62,8 +62,8 @@
                         <label for="bufferSize" class="font-semibold text-sm">分析ウィンドウ:</label>
                         <select id="bufferSize" class="bg-gray-700 text-white rounded-md p-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <option value="256">256 (最高分解能)</option>
-                            <option value="512" selected>512 (高分解能)</option>
-                            <option value="1024">1024 (標準)</option>
+                            <option value="512">512 (高分解能)</option>
+                            <option value="1024" selected>1024 (標準)</option>
                             <option value="2048">2048 (低音域重視)</option>
                         </select>
                     </div>
@@ -236,6 +236,8 @@
                             },
                             y: {
                                 title: { display: true, text: 'Pitch (Note)', color: '#d1d5db' },
+                                min: 48, // C3
+                                max: 98, // D7
                                 ticks: { color: '#9ca3af', stepSize: 1, callback: (value) => Number.isInteger(value) ? midiToNoteName(value) : '' },
                                 grid: { color: 'rgba(255, 255, 255, 0.1)' }
                             }
@@ -319,7 +321,7 @@
                 chart.update();
             };
 
-            // --- YIN Algorithm (without Parabolic Interpolation) ---
+            // --- YIN Algorithm with default Gaussian Interpolation ---
             function yin(buffer, sampleRate, threshold) {
                 const yinBuffer = new Float32Array(buffer.length / 2);
                 let tau, pitchInHertz = 0, probability = 0;
@@ -356,9 +358,32 @@
                 
                 probability = 1 - yinBuffer[tau];
                 
-                // 5. Estimate frequency from the integer tau
-                if (tau > 0) {
-                    pitchInHertz = sampleRate / tau;
+                // 5. Gaussian Interpolation for better accuracy
+                let betterTau = tau; // Default to the integer tau
+                if (tau > 0 && tau < yinBuffer.length - 1) {
+                    const y_prev = yinBuffer[tau - 1];
+                    const y_curr = yinBuffer[tau];
+                    const y_next = yinBuffer[tau + 1];
+
+                    if (y_curr < y_prev && y_curr < y_next) {
+                        const log_prev = Math.log(y_prev);
+                        const log_curr = Math.log(y_curr);
+                        const log_next = Math.log(y_next);
+                        
+                        const numerator = log_prev - log_next;
+                        const denominator = 2 * (log_prev - 2 * log_curr + log_next);
+
+                        if (denominator !== 0) {
+                            const adjustment = numerator / denominator;
+                            if (Math.abs(adjustment) <= 1) {
+                                betterTau = tau + adjustment;
+                            }
+                        }
+                    }
+                }
+                
+                if (betterTau > 0) {
+                    pitchInHertz = sampleRate / betterTau;
                 }
 
                 return { frequency: pitchInHertz, confidence: probability };
